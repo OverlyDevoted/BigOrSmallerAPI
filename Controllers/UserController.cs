@@ -11,14 +11,14 @@ namespace Catalog.Controllers
             {
                 new User {
                     Id = 1,
-                    UserName="K3yman",
-                    Passsword="banana16"
+                    Username="K3yman",
+                    Password="banana16"
                 },
                 new User
                 {
                     Id = 2,
-                    UserName="BubbleWrapped",
-                    Passsword="dude"
+                    Username="BubbleWrapped",
+                    Password="dude"
                 }
             };
         private readonly DataContext dataContext;
@@ -27,6 +27,7 @@ namespace Catalog.Controllers
         {
             this.dataContext = dataContext;
         }
+        
         [HttpGet]
         public async Task<ActionResult<List<User>>> Get()
         {
@@ -55,8 +56,8 @@ namespace Catalog.Controllers
             if(dbUser==null)
                 return BadRequest("User not found");
             
-            dbUser.UserName = user.UserName;
-            dbUser.Passsword = user.Passsword; 
+            dbUser.Username = user.Username;
+            dbUser.Password = user.Password; 
             
             await dataContext.SaveChangesAsync();
 
