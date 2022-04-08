@@ -1,14 +1,9 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Catalog
+﻿namespace Catalog
 {
-    public class User
+    public class UserDto
     {
         public int Id { get; set; }
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-
-        [JsonIgnore]
-        public List<Game> Games { get; set; }
     }
 }

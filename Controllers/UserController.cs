@@ -7,32 +7,19 @@ namespace Catalog.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private static List<User> users = new List<User>
-            {
-                new User {
-                    Id = 1,
-                    Username="K3yman",
-                    Password="banana16"
-                },
-                new User
-                {
-                    Id = 2,
-                    Username="BubbleWrapped",
-                    Password="dude"
-                }
-            };
         private readonly DataContext dataContext;
 
         public UserController(DataContext dataContext)
         {
             this.dataContext = dataContext;
         }
-        
+
         [HttpGet]
         public async Task<ActionResult<List<User>>> Get()
         {
             return Ok(await dataContext.Users.ToListAsync());
         }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> Get(int id)
         {
@@ -42,13 +29,47 @@ namespace Catalog.Controllers
             return Ok(user);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<List<User>>> AddUser(User user)
+        [HttpPost("find")]
+        public async Task<ActionResult> FindUser(UserDto user)
         {
-            dataContext.Users.Add(user);
-            await dataContext.SaveChangesAsync();
-            return Ok(await dataContext.Users.ToListAsync());
+            var dbUser = await dataContext.Users
+                .Where(users => users.Username == user.Username && users.Password == user.Password)
+                .ToListAsync();
+
+            GameUserDto response = new GameUserDto
+            {
+                Id = dbUser[0].Id,
+                Games = await dataContext.Games.Where(games => games.UserId == dbUser[0].Id).ToListAsync()
+            };
+
+            return Ok(response);
         }
+        
+
+        [HttpPost]
+        public async Task<ActionResult<List<User>>> AddUser(UserDto user)
+        {
+            var dbUser = await dataContext.Users
+                .Where(users => users.Username == user.Username)
+                .ToListAsync();
+
+            if (dbUser.Count > 0)
+                return BadRequest("User already exists");
+            User newUser = new User{
+               Username = user.Username,
+               Password = user.Password
+            };
+            
+            dataContext.Users.Add(newUser);
+            await dataContext.SaveChangesAsync();
+
+            var forId = await dataContext.Users
+                .Where(users => users.Username == user.Username && users.Password == user.Password)
+                .ToListAsync();
+
+            return Ok(forId[0].Id);
+        }
+
         [HttpPut("{id}")]
         public async Task<ActionResult<List<User>>> UpdateUser(User user, int id)
         {
