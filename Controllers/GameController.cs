@@ -18,6 +18,7 @@ namespace Catalog.Controllers
         {
             return Ok(await _context.Games.ToListAsync());
         }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<List<Game>>> FindByUser(int id)
         {
@@ -43,6 +44,7 @@ namespace Catalog.Controllers
 
             return Ok(newGame);
         }
+
         [HttpDelete("{id}")]
         public async Task<ActionResult<Game>> Delete(int id)
         {
@@ -51,6 +53,19 @@ namespace Catalog.Controllers
             _context.Games.Remove(game);
             await _context.SaveChangesAsync();
             return Ok(game);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Game>> Update(GameDto game, int id)
+        {
+            var dbGame = await _context.Games.FindAsync(id);
+            if (dbGame == null) return BadRequest("No game found");
+
+            dbGame.Cover_url = game.Cover_url;
+            dbGame.Name = game.Name;
+
+            await _context.SaveChangesAsync();
+            return Ok(dbGame);
         }
 
     }
