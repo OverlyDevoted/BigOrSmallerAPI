@@ -38,6 +38,7 @@ namespace Catalog.Controllers
                 Name = game.Name,
                 Cover_url = game.Cover_url,
                 UserId = game.UserId,
+                Created = DateTime.Now,
             };
             _context.Games.Add(newGame);
             await _context.SaveChangesAsync();
