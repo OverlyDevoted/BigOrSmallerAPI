@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.Controllers
@@ -12,11 +13,13 @@ namespace Catalog.Controllers
         {
             _context = context;
         }
+
         [HttpGet]
         public async Task<ActionResult<List<Game>>> Get()
         {
             return Ok(await _context.GameItems.ToListAsync());
         }
+        
         [HttpGet("{id}")]
         public async Task<ActionResult<List<GameItem>>> FindByGame(int id)
         {
@@ -26,7 +29,7 @@ namespace Catalog.Controllers
             return Ok(games);
         }
 
-        [HttpPost("{id}")]
+        [HttpPost("{id}"), Authorize]
         public async Task<ActionResult<GameItem>> AddGameItem(GameItemDto gameItem, int id)
         {
             var game = await _context.Games.FindAsync(id);
@@ -45,7 +48,7 @@ namespace Catalog.Controllers
 
             return Ok(newGameItem);
         }
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize]
         public async Task<ActionResult<GameItem>> Delete(int id)
         {
             var game = await _context.GameItems.FindAsync(id);
@@ -56,7 +59,7 @@ namespace Catalog.Controllers
         }
 
 
-        [HttpPut("{id}")]
+        [HttpPut("{id}"), Authorize]
         public async Task<ActionResult<GameItem>> Update(GameItemDto game, int id)
         {
             var dbGame = await _context.GameItems.FindAsync(id);

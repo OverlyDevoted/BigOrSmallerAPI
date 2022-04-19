@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.Controllers
@@ -26,26 +27,31 @@ namespace Catalog.Controllers
             return Ok(allGames);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<List<Game>>> FindByUser(int id)
+        [HttpGet, Authorize]
+        public async Task<ActionResult<List<Game>>> FindByUser()
         {
-            var games = await _context.Games.Where(game => game.UserId == id).ToListAsync();
+            var tokenId = User?.Identity?.Name;
+
+            var games = await _context.Games.Where(game => game.UserId.ToString() == tokenId).ToListAsync();
             if (games.Count < 1)
                 return BadRequest("No games under that ID");
             return Ok(games);
         }
 
-        [HttpPost]
+        [HttpPost, Authorize]
         public async Task<ActionResult<Game>> Post(GameDto game)
         {
-            var user = await _context.Users.FindAsync(game.UserId);
+            var tokenId = User?.Identity?.Name;
+            
+            var user = await _context.Users.FindAsync(int.Parse(tokenId));
             if (user == null) return BadRequest("No user found");
 
             Game newGame = new Game {
                 Name = game.Name,
                 Cover_url = game.Cover_url,
-                UserId = game.UserId,
+                UserId = user.Id,
                 Created = DateTime.Now,
+                IsSmallerMode = game.IsSmallerMode,
             };
             _context.Games.Add(newGame);
             await _context.SaveChangesAsync();
@@ -53,7 +59,7 @@ namespace Catalog.Controllers
             return Ok(newGame);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize]
         public async Task<ActionResult<Game>> Delete(int id)
         {
             var game = await _context.Games.FindAsync(id);
@@ -63,7 +69,7 @@ namespace Catalog.Controllers
             return Ok(game);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id}"), Authorize]
         public async Task<ActionResult<Game>> Update(GameDto game, int id)
         {
             var dbGame = await _context.Games.FindAsync(id);
@@ -71,6 +77,7 @@ namespace Catalog.Controllers
 
             dbGame.Cover_url = game.Cover_url;
             dbGame.Name = game.Name;
+            dbGame.IsSmallerMode = game.IsSmallerMode;
 
             await _context.SaveChangesAsync();
             return Ok(dbGame);

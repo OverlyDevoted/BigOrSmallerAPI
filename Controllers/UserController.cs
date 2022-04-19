@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Catalog.Controllers
 {
@@ -14,22 +16,28 @@ namespace Catalog.Controllers
             this.dataContext = dataContext;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<User>>> Get()
+        [HttpGet, Authorize]
+        public async Task<ActionResult<UserLoginDto>>Get()
         {
-            return Ok(await dataContext.Users.ToListAsync());
+            var userId = User?.Identity?.Name;
+            var user = await dataContext.Users.FindAsync(int.Parse(userId));
+            UserLoginDto loginDto = new UserLoginDto();
+            loginDto.UserName = user.Username; 
+            return Ok(loginDto);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> Get(int id)
+ /*       [HttpGet("{token}")]
+        public async Task<ActionResult<User>> Get(string token)
         {
             var user = await dataContext.Users.FindAsync(id);
             if (user == null)
                 return BadRequest("User not found");
             return Ok(user);
-        }
+        }*/
 
-        [HttpPost("find")]
+
+        //Depricated replaced by ./auth/login
+        /*[HttpPost("find")]
         public async Task<ActionResult> FindUser(UserDto user)
         {
             var dbUser = await dataContext.Users
@@ -43,10 +51,11 @@ namespace Catalog.Controllers
             };
 
             return Ok(response);
-        }
-        
+        }*/
 
-        [HttpPost]
+
+        //Depricated - replaced by ./auth/register
+        /*[HttpPost]
         public async Task<ActionResult<List<User>>> AddUser(UserDto user)
         {
             var dbUser = await dataContext.Users
@@ -68,9 +77,10 @@ namespace Catalog.Controllers
                 .ToListAsync();
 
             return Ok(forId[0].Id);
-        }
+        }*/
 
-        [HttpPut("{id}")]
+        // TODO Refactor 
+        /*[HttpPut("{id}")]
         public async Task<ActionResult<List<User>>> UpdateUser(User user, int id)
         {
             var dbUser = await dataContext.Users.FindAsync(id);
@@ -83,7 +93,7 @@ namespace Catalog.Controllers
             await dataContext.SaveChangesAsync();
 
             return Ok(await dataContext.Users.ToListAsync());
-        }
+        }*/
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<User>>> DeleteUser(int id)
         {
