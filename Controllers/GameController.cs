@@ -13,10 +13,17 @@ namespace Catalog.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<Game>>> Get()
+        [HttpGet("all/{count}")]
+        public async Task<ActionResult<List<Game>>> Get(int count)
         {
-            return Ok(await _context.Games.ToListAsync());
+            if(count>100 || count<1)
+                return BadRequest("Invalid number of requested games");
+            var allGames = await _context.Games.ToListAsync();
+            if(count < allGames.Count)
+            allGames.RemoveRange(0, count);
+            allGames = Game.SortByDate(allGames);
+
+            return Ok(allGames);
         }
 
         [HttpGet("{id}")]
